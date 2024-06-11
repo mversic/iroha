@@ -1,5 +1,3 @@
-use std::str::FromStr as _;
-
 use eyre::Result;
 use iroha::{
     client::{self, QueryResult},
@@ -60,7 +58,7 @@ fn register_and_grant_role_for_metadata_access() -> Result<()> {
     test_client.submit_blocking(register_mouse)?;
 
     // Registering role
-    let role_id = RoleId::from_str("ACCESS_TO_MOUSE_METADATA")?;
+    let role_id = "ACCESS_TO_MOUSE_METADATA".parse::<RoleId>()?;
     let role = Role::new(role_id.clone())
         .add_permission(Permission::new(
             "CanSetKeyValueInAccount".parse()?,
@@ -81,11 +79,8 @@ fn register_and_grant_role_for_metadata_access() -> Result<()> {
     test_client.submit_transaction_blocking(&grant_role_tx)?;
 
     // Alice modifies Mouse's metadata
-    let set_key_value = SetKeyValue::account(
-        mouse_id,
-        Name::from_str("key").expect("Valid"),
-        "value".to_owned(),
-    );
+    let set_key_value =
+        SetKeyValue::account(mouse_id, "key".parse().expect("Valid"), "value".to_owned());
     test_client.submit_blocking(set_key_value)?;
 
     // Making request to find Alice's roles
@@ -145,7 +140,7 @@ fn role_with_invalid_permissions_is_not_accepted() -> Result<()> {
     let (_rt, _peer, test_client) = <PeerBuilder>::new().with_port(11_025).start_with_runtime();
     wait_for_genesis_committed(&vec![test_client.clone()], 0);
 
-    let role_id = RoleId::from_str("ACCESS_TO_ACCOUNT_METADATA")?;
+    let role_id = "ACCESS_TO_ACCOUNT_METADATA".parse()?;
     let rose_asset_id: AssetId = format!("rose##{}", ALICE_ID.clone())
         .parse()
         .expect("should be valid");
@@ -223,13 +218,13 @@ fn grant_revoke_role_permissions() -> Result<()> {
     test_client.submit_blocking(register_mouse)?;
 
     // Registering role
-    let role_id = RoleId::from_str("ACCESS_TO_MOUSE_METADATA")?;
+    let role_id = "ACCESS_TO_MOUSE_METADATA".parse::<RoleId>()?;
     let role = Role::new(role_id.clone());
     let register_role = Register::role(role);
     test_client.submit_blocking(register_role)?;
 
     // Transfer domain ownership to Mouse
-    let domain_id = DomainId::from_str("wonderland")?;
+    let domain_id = "wonderland".parse()?;
     let transfer_domain = Transfer::domain(alice_id.clone(), domain_id, mouse_id.clone());
     test_client.submit_blocking(transfer_domain)?;
 
@@ -242,7 +237,7 @@ fn grant_revoke_role_permissions() -> Result<()> {
 
     let set_key_value = SetKeyValue::account(
         mouse_id.clone(),
-        Name::from_str("key").expect("Valid"),
+        "key".parse().expect("Valid"),
         "value".to_owned(),
     );
     let permission = Permission::new(

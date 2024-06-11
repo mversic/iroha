@@ -304,9 +304,7 @@ fn list_types<W: io::Write>(map: &ConverterMap, writer: &mut W) -> Result<()> {
 
 #[cfg(test)]
 mod tests {
-    use std::str::FromStr as _;
-
-    use iroha_data_model::{ipfs::IpfsPath, prelude::*};
+    use iroha_data_model::prelude::*;
     use test_samples::ALICE_ID;
 
     use super::*;
@@ -336,8 +334,9 @@ mod tests {
             .expect("Valid");
         let domain = Domain::new("wonderland".parse().expect("Valid"))
             .with_logo(
-                IpfsPath::from_str("/ipfs/Qme7ss3ARVgxv6rXqVPiikMJ8u2NLgmgszg13pYrDKEoiu")
-                    .expect("Valid"),
+                "/ipfs/Qme7ss3ARVgxv6rXqVPiikMJ8u2NLgmgszg13pYrDKEoiu"
+                    .parse()
+                    .unwrap(),
             )
             .with_metadata(metadata);
 

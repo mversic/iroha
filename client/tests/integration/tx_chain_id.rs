@@ -1,5 +1,3 @@
-use std::str::FromStr;
-
 use iroha_data_model::prelude::*;
 use iroha_primitives::numeric::numeric;
 use test_network::*;
@@ -12,7 +10,9 @@ fn send_tx_with_different_chain_id() {
     // Given
     let (sender_id, sender_keypair) = gen_account_in("wonderland");
     let (receiver_id, _receiver_keypair) = gen_account_in("wonderland");
-    let asset_definition_id = AssetDefinitionId::from_str("test_asset#wonderland").unwrap();
+    let asset_definition_id = "test_asset#wonderland"
+        .parse::<AssetDefinitionId>()
+        .unwrap();
     let to_transfer = numeric!(1);
 
     let create_sender_account: InstructionBox =

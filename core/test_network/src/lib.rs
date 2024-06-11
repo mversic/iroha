@@ -1,5 +1,5 @@
 //! Module for starting peers and networks. Used only for tests
-use core::{fmt::Debug, str::FromStr as _, time::Duration};
+use core::{fmt::Debug, time::Duration};
 #[cfg(debug_assertions)]
 use std::sync::atomic::AtomicBool;
 use std::{collections::BTreeMap, ops::Deref, path::Path, sync::Arc, thread};
@@ -86,8 +86,9 @@ impl TestGenesis for GenesisTransaction {
             RawGenesisTransaction::from_path(manifest_dir.join("../../configs/swarm/genesis.json"))
                 .expect("Failed to deserialize genesis block from file");
 
-        let rose_definition_id =
-            AssetDefinitionId::from_str("rose#wonderland").expect("valid names");
+        let rose_definition_id = "rose#wonderland"
+            .parse::<AssetDefinitionId>()
+            .expect("valid names");
 
         let mint_rose_permission = Permission::new(
             "CanMintAssetWithDefinition".parse().unwrap(),
@@ -103,7 +104,7 @@ impl TestGenesis for GenesisTransaction {
             Permission::new("CanUnregisterAnyRole".parse().unwrap(), json!(null));
         let unregister_wonderland_domain = Permission::new(
             "CanUnregisterDomain".parse().unwrap(),
-            json!({ "domain": DomainId::from_str("wonderland").unwrap() }),
+            json!({ "domain": "wonderland".parse::<DomainId>().unwrap() }),
         );
         let upgrade_executor_permission =
             Permission::new("CanUpgradeExecutor".parse().unwrap(), json!(null));

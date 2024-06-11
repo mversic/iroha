@@ -1,5 +1,3 @@
-use std::str::FromStr;
-
 use eyre::Result;
 use iroha::{
     client::{self, QueryResult},
@@ -12,8 +10,8 @@ fn can_change_parameter_value() -> Result<()> {
     let (_rt, _peer, test_client) = <PeerBuilder>::new().with_port(11_135).start_with_runtime();
     wait_for_genesis_committed(&vec![test_client.clone()], 0);
 
-    let parameter = Parameter::from_str("?BlockTime=4000")?;
-    let parameter_id = ParameterId::from_str("BlockTime")?;
+    let parameter = "?BlockTime=4000".parse()?;
+    let parameter_id = "BlockTime".parse()?;
     let param_box = SetParameter::new(parameter);
 
     let old_params = test_client
@@ -51,7 +49,7 @@ fn parameter_propagated() -> Result<()> {
         .submit_blocking(create_domain.clone())
         .expect_err("Should fail before ident length limits update");
 
-    let parameter = Parameter::from_str("?WSVIdentLengthLimits=1,256_LL")?;
+    let parameter = "?WSVIdentLengthLimits=1,256_LL".parse()?;
     let param_box = SetParameter::new(parameter);
     test_client.submit_blocking(param_box)?;
 

@@ -1,4 +1,4 @@
-use std::{str::FromStr as _, time::Duration};
+use std::time::Duration;
 
 use eyre::Result;
 use iroha::{
@@ -106,7 +106,9 @@ fn mint_asset_after_3_sec() -> Result<()> {
     // Sleep to certainly bypass time interval analyzed by genesis
     std::thread::sleep(DEFAULT_CONSENSUS_ESTIMATION);
 
-    let asset_definition_id = AssetDefinitionId::from_str("rose#wonderland").expect("Valid");
+    let asset_definition_id = "rose#wonderland"
+        .parse::<AssetDefinitionId>()
+        .expect("Valid");
     let account_id = ALICE_ID.clone();
     let asset_id = AssetId::new(asset_definition_id.clone(), account_id.clone());
 

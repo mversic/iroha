@@ -529,7 +529,6 @@ mod tests {
     use std::{
         collections::{BTreeMap, BTreeSet, HashMap, HashSet},
         path::{Path, PathBuf},
-        str::FromStr,
     };
 
     use iroha_config::{
@@ -537,7 +536,7 @@ mod tests {
         parameters::user::Root as UserConfig,
     };
     use iroha_crypto::KeyPair;
-    use iroha_primitives::addr::{socket_addr, SocketAddr};
+    use iroha_primitives::addr::socket_addr;
     use path_absolutize::Absolutize;
 
     use super::*;
@@ -624,8 +623,8 @@ mod tests {
                             key_pair: key_pair.clone(),
                             genesis_public_key: key_pair.public_key().clone(),
                             genesis_signed_file: Some("/tmp/genesis.signed.scale".to_owned()),
-                            p2p_addr: SocketAddr::from_str("iroha1:1339").unwrap(),
-                            api_addr: SocketAddr::from_str("iroha1:1338").unwrap(),
+                            p2p_addr: "iroha1:1339".parse().unwrap(),
+                            api_addr: "iroha1:1338".parse().unwrap(),
                             trusted_peers: BTreeSet::new(),
                         }
                         .into(),
@@ -692,8 +691,8 @@ mod tests {
             key_pair: key_pair.clone(),
             genesis_public_key: key_pair.public_key().clone(),
             genesis_signed_file: None,
-            p2p_addr: SocketAddr::from_str("iroha0:1337").unwrap(),
-            api_addr: SocketAddr::from_str("iroha0:1337").unwrap(),
+            p2p_addr: "iroha0:1337".parse().unwrap(),
+            api_addr: "iroha0:1337".parse().unwrap(),
             trusted_peers: BTreeSet::new(),
         }
         .into();

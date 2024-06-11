@@ -1,5 +1,5 @@
 //! Defaults for various items used in communication over http(s).
-use std::{net::TcpStream, str::FromStr};
+use std::net::TcpStream;
 
 use attohttpc::{
     body as atto_body, RequestBuilder as AttoHttpRequestBuilder, Response as AttoHttpResponse,
@@ -16,7 +16,8 @@ type Bytes = Vec<u8>;
 type AttoHttpRequestBuilderWithBytes = AttoHttpRequestBuilder<atto_body::Bytes<Bytes>>;
 
 fn header_name_from_str(str: &str) -> Result<HeaderName> {
-    HeaderName::from_str(str).wrap_err_with(|| format!("Failed to parse header name {str}"))
+    str.parse()
+        .wrap_err_with(|| format!("Failed to parse header name {str}"))
 }
 
 /// Default request builder implemented on top of `attohttpc` crate.

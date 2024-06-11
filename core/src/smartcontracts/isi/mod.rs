@@ -240,7 +240,6 @@ pub mod prelude {
 
 #[cfg(test)]
 mod tests {
-    use core::str::FromStr as _;
     use std::sync::Arc;
 
     use iroha_data_model::metadata::MetadataValueBox;
@@ -262,10 +261,10 @@ mod tests {
         let world = World::with([], PeersIds::new());
         let query_handle = LiveQueryStore::test().start();
         let state = State::new(world, kura.clone(), query_handle);
-        let asset_definition_id = AssetDefinitionId::from_str("rose#wonderland")?;
+        let asset_definition_id = "rose#wonderland".parse()?;
         let mut state_block = state.block();
         let mut state_transaction = state_block.transaction();
-        Register::domain(Domain::new(DomainId::from_str("wonderland")?))
+        Register::domain(Domain::new("wonderland".parse()?))
             .execute(&SAMPLE_GENESIS_ACCOUNT_ID, &mut state_transaction)?;
         Register::account(Account::new(ALICE_ID.clone()))
             .execute(&SAMPLE_GENESIS_ACCOUNT_ID, &mut state_transaction)?;
@@ -283,11 +282,11 @@ mod tests {
         let mut state_block = state.block();
         let mut state_transaction = state_block.transaction();
         let account_id = ALICE_ID.clone();
-        let asset_definition_id = AssetDefinitionId::from_str("rose#wonderland")?;
+        let asset_definition_id = "rose#wonderland".parse()?;
         let asset_id = AssetId::new(asset_definition_id, account_id.clone());
         SetKeyValue::asset(
             asset_id.clone(),
-            Name::from_str("Bytes")?,
+            "Bytes".parse()?,
             vec![1_u32, 2_u32, 3_u32],
         )
         .execute(&account_id, &mut state_transaction)?;
@@ -316,7 +315,7 @@ mod tests {
         let account_id = ALICE_ID.clone();
         SetKeyValue::account(
             account_id.clone(),
-            Name::from_str("Bytes")?,
+            "Bytes".parse()?,
             vec![1_u32, 2_u32, 3_u32],
         )
         .execute(&account_id, &mut state_transaction)?;
@@ -325,7 +324,7 @@ mod tests {
             .map_account(&account_id, |account| {
                 account
                     .metadata()
-                    .get(&Name::from_str("Bytes").expect("Valid"))
+                    .get(&"Bytes".parse::<Name>().expect("Valid"))
                     .cloned()
             })?;
         assert_eq!(
@@ -345,11 +344,11 @@ mod tests {
         let state = state_with_test_domains(&kura)?;
         let mut state_block = state.block();
         let mut state_transaction = state_block.transaction();
-        let definition_id = AssetDefinitionId::from_str("rose#wonderland")?;
+        let definition_id = "rose#wonderland".parse::<AssetDefinitionId>()?;
         let account_id = ALICE_ID.clone();
         SetKeyValue::asset_definition(
             definition_id.clone(),
-            Name::from_str("Bytes")?,
+            "Bytes".parse()?,
             vec![1_u32, 2_u32, 3_u32],
         )
         .execute(&account_id, &mut state_transaction)?;
@@ -357,7 +356,7 @@ mod tests {
             .world
             .asset_definition(&definition_id)?
             .metadata()
-            .get(&Name::from_str("Bytes")?)
+            .get(&"Bytes".parse::<Name>()?)
             .cloned();
         assert_eq!(
             bytes,
@@ -376,11 +375,11 @@ mod tests {
         let state = state_with_test_domains(&kura)?;
         let mut state_block = state.block();
         let mut state_transaction = state_block.transaction();
-        let domain_id = DomainId::from_str("wonderland")?;
+        let domain_id = "wonderland".parse::<DomainId>()?;
         let account_id = ALICE_ID.clone();
         SetKeyValue::domain(
             domain_id.clone(),
-            Name::from_str("Bytes")?,
+            "Bytes".parse()?,
             vec![1_u32, 2_u32, 3_u32],
         )
         .execute(&account_id, &mut state_transaction)?;
@@ -388,7 +387,7 @@ mod tests {
             .world
             .domain(&domain_id)?
             .metadata()
-            .get(&Name::from_str("Bytes")?)
+            .get(&"Bytes".parse::<Name>()?)
             .cloned();
         assert_eq!(
             bytes,
@@ -408,7 +407,7 @@ mod tests {
         let mut state_block = state.block();
         let mut state_transaction = state_block.transaction();
         let account_id = ALICE_ID.clone();
-        let trigger_id = TriggerId::from_str("test_trigger_id")?;
+        let trigger_id = "test_trigger_id".parse()?;
 
         assert!(matches!(
             ExecuteTrigger::new(trigger_id)
@@ -428,7 +427,7 @@ mod tests {
         let mut state_transaction = state_block.transaction();
         let account_id = ALICE_ID.clone();
         let (fake_account_id, _fake_account_keypair) = gen_account_in("wonderland");
-        let trigger_id = TriggerId::from_str("test_trigger_id")?;
+        let trigger_id = "test_trigger_id".parse::<TriggerId>()?;
 
         // register fake account
         let register_account = Register::account(Account::new(fake_account_id.clone()));
@@ -471,7 +470,7 @@ mod tests {
         let mut state_transaction = state_block.transaction();
         let account_id = ALICE_ID.clone();
         assert!(matches!(
-            Register::domain(Domain::new(DomainId::from_str("genesis")?))
+            Register::domain(Domain::new("genesis".parse()?))
                 .execute(&account_id, &mut state_transaction)
                 .expect_err("Error expected"),
             Error::InvariantViolation(_)

@@ -482,12 +482,12 @@ impl core::str::FromStr for SocketAddr {
     type Err = ParseError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        if let Ok(addr) = SocketAddrV4::from_str(s) {
+        if let Ok(addr) = s.parse() {
             Ok(Self::Ipv4(addr))
-        } else if let Ok(addr) = SocketAddrV6::from_str(s) {
+        } else if let Ok(addr) = s.parse() {
             Ok(Self::Ipv6(addr))
         } else {
-            Ok(Self::Host(SocketAddrHost::from_str(s)?))
+            Ok(Self::Host(s.parse()?))
         }
     }
 }
@@ -610,142 +610,131 @@ mod std_compat {
 
 #[cfg(test)]
 mod test {
-    use core::str::FromStr;
-
     use super::*;
 
     #[test]
     fn ipv4() {
+        assert_eq!(Ipv4Addr([0, 0, 0, 0]), "0.0.0.0".parse().unwrap(),);
+
+        assert_eq!(Ipv4Addr([127, 0, 0, 1]), "127.0.0.1".parse().unwrap(),);
+
         assert_eq!(
-            Ipv4Addr::from_str("0.0.0.0").unwrap(),
-            Ipv4Addr([0, 0, 0, 0])
+            ParseError::InvalidSegment,
+            "192.168.1.256".parse::<Ipv4Addr>().unwrap_err(),
         );
 
         assert_eq!(
-            Ipv4Addr::from_str("127.0.0.1").unwrap(),
-            Ipv4Addr([127, 0, 0, 1])
+            ParseError::NotEnoughSegments,
+            "192.168.1".parse::<Ipv4Addr>().unwrap_err(),
         );
 
         assert_eq!(
-            Ipv4Addr::from_str("192.168.1.256").unwrap_err(),
-            ParseError::InvalidSegment
-        );
-
-        assert_eq!(
-            Ipv4Addr::from_str("192.168.1").unwrap_err(),
-            ParseError::NotEnoughSegments
-        );
-
-        assert_eq!(
-            Ipv4Addr::from_str("192.168.1.2.3").unwrap_err(),
-            ParseError::TooManySegments
+            ParseError::TooManySegments,
+            "192.168.1.2.3".parse::<Ipv4Addr>().unwrap_err(),
         );
     }
 
     #[test]
     fn ipv6() {
+        assert_eq!(Ipv6Addr([0, 0, 0, 0, 0, 0, 0, 1]), "::1".parse().unwrap(),);
+
         assert_eq!(
-            Ipv6Addr::from_str("::1").unwrap(),
-            Ipv6Addr([0, 0, 0, 0, 0, 0, 0, 1])
+            Ipv6Addr([0xff02, 0, 0, 0, 0, 0, 0, 1]),
+            "ff02::1".parse().unwrap(),
         );
 
         assert_eq!(
-            Ipv6Addr::from_str("ff02::1").unwrap(),
-            Ipv6Addr([0xff02, 0, 0, 0, 0, 0, 0, 1])
+            Ipv6Addr([0x2001, 0xdb8, 0, 0, 0, 0, 0, 0]),
+            "2001:0db8::".parse().unwrap(),
         );
 
         assert_eq!(
-            Ipv6Addr::from_str("2001:0db8::").unwrap(),
-            Ipv6Addr([0x2001, 0xdb8, 0, 0, 0, 0, 0, 0])
+            Ipv6Addr([0x2001, 0xdb8, 0, 0, 0, 0, 0, 1]),
+            "2001:0db8:0000:0000:0000:0000:0000:0001".parse().unwrap(),
         );
 
         assert_eq!(
-            Ipv6Addr::from_str("2001:0db8:0000:0000:0000:0000:0000:0001").unwrap(),
-            Ipv6Addr([0x2001, 0xdb8, 0, 0, 0, 0, 0, 1])
+            Ipv6Addr([0x2001, 0xdb8, 0, 0, 0, 0, 0, 1]),
+            "2001:0db8::0001".parse().unwrap(),
         );
 
         assert_eq!(
-            Ipv6Addr::from_str("2001:0db8::0001").unwrap(),
-            Ipv6Addr([0x2001, 0xdb8, 0, 0, 0, 0, 0, 1])
+            ParseError::NotEnoughSegments,
+            "2001:db8:0:1:2:3:4".parse::<Ipv6Addr>().unwrap_err(),
         );
 
         assert_eq!(
-            Ipv6Addr::from_str("2001:db8:0:1:2:3:4").unwrap_err(),
-            ParseError::NotEnoughSegments
-        );
-
-        assert_eq!(
-            Ipv6Addr::from_str("2001:db8:0:1:2:3:4:5:6").unwrap_err(),
-            ParseError::TooManySegments
+            ParseError::TooManySegments,
+            "2001:db8:0:1:2:3:4:5:6".parse::<Ipv6Addr>().unwrap_err(),
         );
     }
 
     #[test]
     fn socket_v4() {
         assert_eq!(
-            SocketAddrV4::from_str("192.168.1.0:9019").unwrap(),
             SocketAddrV4 {
                 ip: Ipv4Addr([192, 168, 1, 0]),
                 port: 9019
-            }
+            },
+            "192.168.1.0:9019".parse().unwrap(),
         );
 
         assert_eq!(
-            SocketAddrV4::from_str("192.168.1.1").unwrap_err(),
-            ParseError::NoPort
+            ParseError::NoPort,
+            "192.168.1.1".parse::<SocketAddrV4>().unwrap_err(),
         );
 
         assert_eq!(
-            SocketAddrV4::from_str("192.168.1.1:FOO").unwrap_err(),
-            ParseError::InvalidPort
+            ParseError::InvalidPort,
+            "192.168.1.1:FOO".parse::<SocketAddrV4>().unwrap_err(),
         );
     }
 
     #[test]
     fn socket_v6() {
         assert_eq!(
-            SocketAddrV6::from_str("[2001:0db8::]:9019").unwrap(),
             SocketAddrV6 {
                 ip: Ipv6Addr([0x2001, 0xdb8, 0, 0, 0, 0, 0, 0]),
                 port: 9019
-            }
+            },
+            "[2001:0db8::]:9019".parse().unwrap(),
         );
 
         assert_eq!(
-            SocketAddrV6::from_str("[2001:0db8::]").unwrap_err(),
-            ParseError::NoPort
+            ParseError::NoPort,
+            "[2001:0db8::]".parse::<SocketAddrV6>().unwrap_err(),
         );
 
         assert_eq!(
-            SocketAddrV6::from_str("[2001:0db8::]:FOO").unwrap_err(),
-            ParseError::InvalidPort
+            ParseError::InvalidPort,
+            "[2001:0db8::]:FOO".parse::<SocketAddrV6>().unwrap_err(),
         );
     }
 
     #[test]
     fn full_socket() {
         assert_eq!(
-            serde_json::from_str::<SocketAddr>("\"192.168.1.0:9019\"").unwrap(),
             SocketAddr::Ipv4(SocketAddrV4 {
                 ip: Ipv4Addr([192, 168, 1, 0]),
                 port: 9019
-            })
+            }),
+            serde_json::from_str::<SocketAddr>("\"192.168.1.0:9019\"").unwrap(),
         );
 
         assert_eq!(
-            serde_json::from_str::<SocketAddr>("\"[2001:0db8::]:9019\"").unwrap(),
             SocketAddr::Ipv6(SocketAddrV6 {
                 ip: Ipv6Addr([0x2001, 0xdb8, 0, 0, 0, 0, 0, 0]),
                 port: 9019
-            })
+            }),
+            serde_json::from_str::<SocketAddr>("\"[2001:0db8::]:9019\"").unwrap(),
         );
 
         assert_eq!(
-            serde_json::from_str::<SocketAddr>("\"localhost:9019\"").unwrap(),
             SocketAddr::Host(SocketAddrHost {
                 host: "localhost".into(),
                 port: 9019
-            })
+            }),
+            serde_json::from_str::<SocketAddr>("\"localhost:9019\"").unwrap(),
         );
     }
 
@@ -757,8 +746,8 @@ mod test {
         });
 
         assert_eq!(
+            v4,
             serde_json::from_str::<SocketAddr>(&serde_json::to_string(&v4).unwrap()).unwrap(),
-            v4
         );
 
         let v6 = SocketAddr::Ipv6(SocketAddrV6 {
@@ -777,18 +766,18 @@ mod test {
 
         assert_eq!(
             serde_json::from_str::<SocketAddr>(&serde_json::to_string(&host).unwrap()).unwrap(),
-            host
+            host,
         );
     }
 
     #[test]
     fn host() {
         assert_eq!(
-            SocketAddrHost::from_str("localhost:9019").unwrap(),
             SocketAddrHost {
                 host: "localhost".into(),
                 port: 9019
-            }
+            },
+            "localhost:9019".parse().unwrap(),
         );
     }
 }

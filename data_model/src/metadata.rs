@@ -451,7 +451,6 @@ pub mod prelude {
 mod tests {
     #[cfg(not(feature = "std"))]
     use alloc::{borrow::ToOwned as _, vec};
-    use core::str::FromStr as _;
 
     use super::*;
     use crate::ParseError;
@@ -482,20 +481,12 @@ mod tests {
         let limits = Limits::new(1024, 1024);
         // TODO: If we allow a `unsafe`, we could create the path.
         metadata
-            .insert_with_limits(Name::from_str("0")?, Metadata::new(), limits)
+            .insert_with_limits("0".parse()?, Metadata::new(), limits)
             .expect("Valid");
         metadata
-            .nested_insert_with_limits(
-                &[Name::from_str("0")?, Name::from_str("1")?],
-                Metadata::new(),
-                limits,
-            )
+            .nested_insert_with_limits(&["0".parse()?, "1".parse()?], Metadata::new(), limits)
             .expect("Valid");
-        let path = [
-            Name::from_str("0")?,
-            Name::from_str("1")?,
-            Name::from_str("2")?,
-        ];
+        let path = ["0".parse()?, "1".parse()?, "2".parse()?];
         metadata
             .nested_insert_with_limits(&path, "Hello World".to_owned(), limits)
             .expect("Valid");
@@ -513,23 +504,15 @@ mod tests {
     fn non_existent_path_segment_fails() -> Result<(), TestError> {
         let mut metadata = Metadata::new();
         let limits = Limits::new(10, 15);
-        metadata.insert_with_limits(Name::from_str("0")?, Metadata::new(), limits)?;
+        metadata.insert_with_limits("0".parse()?, Metadata::new(), limits)?;
         metadata.nested_insert_with_limits(
-            &[Name::from_str("0")?, Name::from_str("1")?],
+            &["0".parse()?, "1".parse()?],
             Metadata::new(),
             limits,
         )?;
-        let path = vec![
-            Name::from_str("0")?,
-            Name::from_str("1")?,
-            Name::from_str("2")?,
-        ];
+        let path = vec!["0".parse()?, "1".parse()?, "2".parse()?];
         metadata.nested_insert_with_limits(&path, "Hello World".to_owned(), limits)?;
-        let bad_path = vec![
-            Name::from_str("0")?,
-            Name::from_str("3")?,
-            Name::from_str("2")?,
-        ];
+        let bad_path = vec!["0".parse()?, "3".parse()?, "2".parse()?];
         assert!(metadata
             .nested_insert_with_limits(&bad_path, "Hello World".to_owned(), limits)
             .is_err());
@@ -544,19 +527,11 @@ mod tests {
         let mut metadata = Metadata::new();
         let limits = Limits::new(10, 14);
         // TODO: If we allow a `unsafe`, we could create the path.
-        metadata.insert_with_limits(Name::from_str("0")?, Metadata::new(), limits)?;
+        metadata.insert_with_limits("0".parse()?, Metadata::new(), limits)?;
         metadata
-            .nested_insert_with_limits(
-                &[Name::from_str("0")?, Name::from_str("1")?],
-                Metadata::new(),
-                limits,
-            )
+            .nested_insert_with_limits(&["0".parse()?, "1".parse()?], Metadata::new(), limits)
             .expect("Valid");
-        let path = vec![
-            Name::from_str("0")?,
-            Name::from_str("1")?,
-            Name::from_str("2")?,
-        ];
+        let path = vec!["0".parse()?, "1".parse()?, "2".parse()?];
         let failing_insert =
             metadata.nested_insert_with_limits(&path, "Hello World".to_owned(), limits);
 
@@ -569,10 +544,10 @@ mod tests {
         let mut metadata = Metadata::new();
         let limits = Limits::new(10, 5);
         assert!(metadata
-            .insert_with_limits(Name::from_str("1")?, "2".to_owned(), limits)
+            .insert_with_limits("1".parse()?, "2".to_owned(), limits)
             .is_ok());
         assert!(metadata
-            .insert_with_limits(Name::from_str("1")?, "23456".to_owned(), limits)
+            .insert_with_limits("1".parse()?, "23456".to_owned(), limits)
             .is_err());
         Ok(())
     }
@@ -583,16 +558,16 @@ mod tests {
         let mut metadata = Metadata::new();
         let limits = Limits::new(2, 5);
         assert!(metadata
-            .insert_with_limits(Name::from_str("1")?, "0".to_owned(), limits)
+            .insert_with_limits("1".parse()?, "0".to_owned(), limits)
             .is_ok());
         assert!(metadata
-            .insert_with_limits(Name::from_str("2")?, "0".to_owned(), limits)
+            .insert_with_limits("2".parse()?, "0".to_owned(), limits)
             .is_ok());
         assert!(metadata
-            .insert_with_limits(Name::from_str("2")?, "1".to_owned(), limits)
+            .insert_with_limits("2".parse()?, "1".to_owned(), limits)
             .is_ok());
         assert!(metadata
-            .insert_with_limits(Name::from_str("3")?, "0".to_owned(), limits)
+            .insert_with_limits("3".parse()?, "0".to_owned(), limits)
             .is_err());
         Ok(())
     }

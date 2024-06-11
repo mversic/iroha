@@ -627,10 +627,7 @@ mod tests {
         // this test tries to ensure that encodings of SmartContractQuery and QueryRequest are compatible with those in data model
 
         use alloc::string::ToString;
-        use core::{
-            num::{NonZeroU32, NonZeroU64},
-            str::FromStr,
-        };
+        use core::num::{NonZeroU32, NonZeroU64};
 
         let query = FindAccountById::new(test_samples::ALICE_ID.clone());
         let smart_contract_filter: PredicateBox =
@@ -643,7 +640,7 @@ mod tests {
         let smart_contract_query = super::SmartContractQuery {
             query: &query,
             filter: smart_contract_filter.clone(),
-            sorting: Sorting::by_metadata_key(Name::from_str("metadata_key").unwrap()),
+            sorting: Sorting::by_metadata_key("metadata_key".parse().unwrap()),
             pagination: Pagination {
                 limit: Some(NonZeroU32::new(12_341_234).unwrap()),
                 start: Some(NonZeroU64::new(43_214_321).unwrap()),

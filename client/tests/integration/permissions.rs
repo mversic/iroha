@@ -1,4 +1,4 @@
-use std::{str::FromStr as _, thread, time::Duration};
+use std::{thread, time::Duration};
 
 use eyre::Result;
 use iroha::{
@@ -129,7 +129,9 @@ fn permissions_disallow_asset_burn() {
     let alice_id = ALICE_ID.clone();
     let bob_id = BOB_ID.clone();
     let (mouse_id, _mouse_keypair) = gen_account_in("wonderland");
-    let asset_definition_id = AssetDefinitionId::from_str("xor#wonderland").expect("Valid");
+    let asset_definition_id = "xor#wonderland"
+        .parse::<AssetDefinitionId>()
+        .expect("Valid");
     let create_asset =
         Register::asset_definition(AssetDefinition::numeric(asset_definition_id.clone()));
     let mouse_keypair = KeyPair::random();
@@ -249,7 +251,7 @@ fn permissions_differ_not_only_by_names() {
     client
         .submit_blocking(SetKeyValue::asset(
             mouse_hat_id,
-            Name::from_str("color").expect("Valid"),
+            "color".parse().expect("Valid"),
             "red".to_owned(),
         ))
         .expect("Failed to modify Mouse's hats");
@@ -258,7 +260,7 @@ fn permissions_differ_not_only_by_names() {
     let mouse_shoes_id = AssetId::new(shoes_definition_id, mouse_id.clone());
     let set_shoes_color = SetKeyValue::asset(
         mouse_shoes_id.clone(),
-        Name::from_str("color").expect("Valid"),
+        "color".parse().expect("Valid"),
         "yellow".to_owned(),
     );
     let _err = client
@@ -335,7 +337,7 @@ fn stored_vs_granted_token_payload() -> Result<()> {
         .expect("Failed to grant permission to alice.");
 
     // Check that alice can indeed mint mouse asset
-    let set_key_value = SetKeyValue::asset(mouse_asset, Name::from_str("color")?, "red".to_owned());
+    let set_key_value = SetKeyValue::asset(mouse_asset, "color".parse()?, "red".to_owned());
     iroha
         .submit_blocking(set_key_value)
         .expect("Failed to mint asset for mouse.");

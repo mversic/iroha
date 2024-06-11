@@ -797,8 +797,6 @@ mod event {
 
 #[cfg(test)]
 mod tests {
-    use std::str::FromStr as _;
-
     use iroha_crypto::SignatureVerificationFail;
     use iroha_data_model::prelude::*;
     use iroha_genesis::GENESIS_DOMAIN_ID;
@@ -830,7 +828,7 @@ mod tests {
         // Predefined world state
         let (alice_id, alice_keypair) = gen_account_in("wonderland");
         let account = Account::new(alice_id.clone()).build(&alice_id);
-        let domain_id = DomainId::from_str("wonderland").expect("Valid");
+        let domain_id = "wonderland".parse().expect("Valid");
         let mut domain = Domain::new(domain_id).build(&alice_id);
         assert!(domain.add_account(account).is_none());
         let world = World::with([domain], UniqueVec::new());
@@ -840,7 +838,7 @@ mod tests {
         let mut state_block = state.block();
 
         // Creating an instruction
-        let asset_definition_id = AssetDefinitionId::from_str("xor#wonderland").expect("Valid");
+        let asset_definition_id = "xor#wonderland".parse().expect("Valid");
         let create_asset_definition =
             Register::asset_definition(AssetDefinition::numeric(asset_definition_id));
 
@@ -885,7 +883,7 @@ mod tests {
         // Predefined world state
         let (alice_id, alice_keypair) = gen_account_in("wonderland");
         let account = Account::new(alice_id.clone()).build(&alice_id);
-        let domain_id = DomainId::from_str("wonderland").expect("Valid");
+        let domain_id = "wonderland".parse().expect("Valid");
         let mut domain = Domain::new(domain_id).build(&alice_id);
         assert!(domain.add_account(account).is_none());
         let world = World::with([domain], UniqueVec::new());
@@ -895,7 +893,9 @@ mod tests {
         let mut state_block = state.block();
 
         // Creating an instruction
-        let asset_definition_id = AssetDefinitionId::from_str("xor#wonderland").expect("Valid");
+        let asset_definition_id = "xor#wonderland"
+            .parse::<AssetDefinitionId>()
+            .expect("Valid");
         let create_asset_definition =
             Register::asset_definition(AssetDefinition::numeric(asset_definition_id.clone()));
 
@@ -958,7 +958,7 @@ mod tests {
         // Predefined world state
         let (alice_id, alice_keypair) = gen_account_in("wonderland");
         let account = Account::new(alice_id.clone()).build(&alice_id);
-        let domain_id = DomainId::from_str("wonderland").expect("Valid");
+        let domain_id = "wonderland".parse().expect("Valid");
         let mut domain = Domain::new(domain_id).build(&alice_id);
         assert!(
             domain.add_account(account).is_none(),
@@ -971,9 +971,9 @@ mod tests {
         let mut state_block = state.block();
         let transaction_limits = &state_block.transaction_executor().transaction_limits;
 
-        let domain_id = DomainId::from_str("domain").expect("Valid");
+        let domain_id = "domain".parse().expect("Valid");
         let create_domain = Register::domain(Domain::new(domain_id));
-        let asset_definition_id = AssetDefinitionId::from_str("coin#domain").expect("Valid");
+        let asset_definition_id = "coin#domain".parse().expect("Valid");
         let create_asset =
             Register::asset_definition(AssetDefinition::numeric(asset_definition_id));
         let instructions_fail: [InstructionBox; 2] = [

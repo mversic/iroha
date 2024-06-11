@@ -1603,13 +1603,11 @@ pub mod executor {
 
 #[cfg(test)]
 mod tests {
-    use std::str::FromStr;
-
     use iroha_primitives::small::SmallStr;
     use test_samples::gen_account_in;
 
     use super::*;
-    use crate::config::{BasicAuth, Config, WebLogin};
+    use crate::config::{BasicAuth, Config};
 
     const LOGIN: &str = "mad_hatter";
     const PASSWORD: &str = "ilovetea";
@@ -1665,7 +1663,7 @@ mod tests {
     fn authorization_header() {
         let client = Client::new(Config {
             basic_auth: Some(BasicAuth {
-                web_login: WebLogin::from_str(LOGIN).expect("Failed to create valid `WebLogin`"),
+                web_login: LOGIN.parse().expect("Failed to create valid `WebLogin`"),
                 password: SmallStr::from_str(PASSWORD),
             }),
             ..config_factory()

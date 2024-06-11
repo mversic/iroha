@@ -1,5 +1,3 @@
-use std::str::FromStr as _;
-
 use iroha_core::{
     block::{BlockBuilder, CommittedBlock},
     prelude::*,
@@ -202,7 +200,7 @@ pub fn build_state(rt: &tokio::runtime::Handle, account_id: &AccountId) -> State
 }
 
 fn construct_domain_id(i: usize) -> DomainId {
-    DomainId::from_str(&format!("non_inlinable_domain_name_{i}")).unwrap()
+    format!("non_inlinable_domain_name_{i}").parse().unwrap()
 }
 
 fn generate_account_id(domain_id: DomainId) -> AccountId {
@@ -212,6 +210,8 @@ fn generate_account_id(domain_id: DomainId) -> AccountId {
 fn construct_asset_definition_id(i: usize, domain_id: DomainId) -> AssetDefinitionId {
     AssetDefinitionId::new(
         domain_id,
-        Name::from_str(&format!("non_inlinable_asset_definition_name_{i}")).unwrap(),
+        format!("non_inlinable_asset_definition_name_{i}")
+            .parse()
+            .unwrap(),
     )
 }

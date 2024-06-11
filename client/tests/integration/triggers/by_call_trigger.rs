@@ -1,4 +1,4 @@
-use std::{str::FromStr as _, sync::mpsc, thread, time::Duration};
+use std::{sync::mpsc, thread, time::Duration};
 
 use eyre::{eyre, Result, WrapErr};
 use iroha::{
@@ -32,7 +32,7 @@ fn call_execute_trigger() -> Result<()> {
     let register_trigger = build_register_trigger_isi(asset_id.account(), vec![instruction.into()]);
     test_client.submit_blocking(register_trigger)?;
 
-    let trigger_id = TriggerId::from_str(TRIGGER_NAME)?;
+    let trigger_id = TRIGGER_NAME.parse()?;
     let call_trigger = ExecuteTrigger::new(trigger_id);
     test_client.submit_blocking(call_trigger)?;
 
@@ -55,7 +55,7 @@ fn execute_trigger_should_produce_event() -> Result<()> {
     let register_trigger = build_register_trigger_isi(asset_id.account(), vec![instruction.into()]);
     test_client.submit_blocking(register_trigger)?;
 
-    let trigger_id = TriggerId::from_str(TRIGGER_NAME)?;
+    let trigger_id = TRIGGER_NAME.parse::<TriggerId>()?;
     let call_trigger = ExecuteTrigger::new(trigger_id.clone());
 
     let thread_client = test_client.clone();
@@ -86,7 +86,7 @@ fn infinite_recursion_should_produce_one_call_per_block() -> Result<()> {
     let asset_definition_id = "rose#wonderland".parse()?;
     let account_id = ALICE_ID.clone();
     let asset_id = AssetId::new(asset_definition_id, account_id);
-    let trigger_id = TriggerId::from_str(TRIGGER_NAME)?;
+    let trigger_id = TRIGGER_NAME.parse()?;
     let call_trigger = ExecuteTrigger::new(trigger_id);
     let prev_value = get_asset_value(&mut test_client, asset_id.clone());
 
@@ -115,7 +115,7 @@ fn trigger_failure_should_not_cancel_other_triggers_execution() -> Result<()> {
     let asset_id = AssetId::new(asset_definition_id, account_id.clone());
 
     // Registering trigger that should fail on execution
-    let bad_trigger_id = TriggerId::from_str("bad_trigger")?;
+    let bad_trigger_id = "bad_trigger".parse::<TriggerId>()?;
     // Invalid instruction
     let bad_trigger_instructions = vec![Fail::new("Bad trigger".to_owned())];
     let register_bad_trigger = Register::trigger(Trigger::new(
@@ -132,7 +132,7 @@ fn trigger_failure_should_not_cancel_other_triggers_execution() -> Result<()> {
     test_client.submit(register_bad_trigger)?;
 
     // Registering normal trigger
-    let trigger_id = TriggerId::from_str(TRIGGER_NAME)?;
+    let trigger_id = TRIGGER_NAME.parse()?;
     let trigger_instructions = vec![Mint::asset_numeric(1u32, asset_id.clone())];
     let register_trigger = Register::trigger(Trigger::new(
         trigger_id,
@@ -169,7 +169,7 @@ fn trigger_should_not_be_executed_with_zero_repeats_count() -> Result<()> {
     let asset_definition_id = "rose#wonderland".parse()?;
     let account_id = ALICE_ID.clone();
     let asset_id = AssetId::new(asset_definition_id, account_id.clone());
-    let trigger_id = TriggerId::from_str("self_modifying_trigger")?;
+    let trigger_id = "self_modifying_trigger".parse::<TriggerId>()?;
 
     let trigger_instructions = vec![Mint::asset_numeric(1u32, asset_id.clone())];
     let register_trigger = Register::trigger(Trigger::new(
@@ -229,7 +229,7 @@ fn trigger_should_be_able_to_modify_its_own_repeats_count() -> Result<()> {
     let asset_definition_id = "rose#wonderland".parse()?;
     let account_id = ALICE_ID.clone();
     let asset_id = AssetId::new(asset_definition_id, account_id.clone());
-    let trigger_id = TriggerId::from_str("self_modifying_trigger")?;
+    let trigger_id = "self_modifying_trigger".parse::<TriggerId>()?;
 
     let trigger_instructions = vec![
         InstructionBox::from(Mint::trigger_repetitions(1_u32, trigger_id.clone())),
@@ -292,7 +292,7 @@ fn only_account_with_permission_can_register_trigger() -> Result<()> {
     );
 
     // Trigger with 'alice' as authority
-    let trigger_id = TriggerId::from_str("alice_trigger")?;
+    let trigger_id = "alice_trigger".parse::<TriggerId>()?;
     let trigger = Trigger::new(
         trigger_id.clone(),
         Action::new(
@@ -350,7 +350,7 @@ fn unregister_trigger() -> Result<()> {
     let account_id = ALICE_ID.clone();
 
     // Registering trigger
-    let trigger_id = TriggerId::from_str("empty_trigger")?;
+    let trigger_id = "empty_trigger".parse::<TriggerId>()?;
     let trigger = Trigger::new(
         trigger_id.clone(),
         Action::new(
@@ -424,7 +424,7 @@ fn trigger_in_genesis_using_base64() -> Result<()> {
     let engine = base64::engine::general_purpose::STANDARD;
     let wasm_base64 = serde_json::json!(base64::engine::Engine::encode(&engine, wasm)).to_string();
     let account_id = ALICE_ID.clone();
-    let trigger_id = TriggerId::from_str("genesis_trigger")?;
+    let trigger_id = "genesis_trigger".parse::<TriggerId>()?;
 
     let trigger = Trigger::new(
         trigger_id.clone(),
@@ -478,8 +478,8 @@ fn trigger_should_be_able_to_modify_other_trigger() -> Result<()> {
     let asset_definition_id = "rose#wonderland".parse()?;
     let account_id = ALICE_ID.clone();
     let asset_id = AssetId::new(asset_definition_id, account_id.clone());
-    let trigger_id_unregister = TriggerId::from_str("unregister_other_trigger")?;
-    let trigger_id_to_be_unregistered = TriggerId::from_str("should_be_unregistered_trigger")?;
+    let trigger_id_unregister = "unregister_other_trigger".parse::<TriggerId>()?;
+    let trigger_id_to_be_unregistered = "should_be_unregistered_trigger".parse::<TriggerId>()?;
 
     let trigger_unregister_instructions =
         vec![Unregister::trigger(trigger_id_to_be_unregistered.clone())];
@@ -538,7 +538,7 @@ fn trigger_burn_repetitions() -> Result<()> {
     let asset_definition_id = "rose#wonderland".parse()?;
     let account_id = ALICE_ID.clone();
     let asset_id = AssetId::new(asset_definition_id, account_id.clone());
-    let trigger_id = TriggerId::from_str("trigger")?;
+    let trigger_id = "trigger".parse::<TriggerId>()?;
 
     let trigger_instructions = vec![Mint::asset_numeric(1u32, asset_id)];
     let register_trigger = Register::trigger(Trigger::new(
@@ -572,8 +572,8 @@ fn unregistering_one_of_two_triggers_with_identical_wasm_should_not_cause_origin
     wait_for_genesis_committed(&vec![test_client.clone()], 0);
 
     let account_id = ALICE_ID.clone();
-    let first_trigger_id = TriggerId::from_str("mint_rose_1")?;
-    let second_trigger_id = TriggerId::from_str("mint_rose_2")?;
+    let first_trigger_id = "mint_rose_1".parse::<TriggerId>()?;
+    let second_trigger_id = "mint_rose_2".parse::<TriggerId>()?;
 
     let wasm =
         iroha_wasm_builder::Builder::new("tests/integration/smartcontracts/mint_rose_trigger")

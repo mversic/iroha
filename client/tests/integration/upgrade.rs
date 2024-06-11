@@ -1,4 +1,4 @@
-use std::{path::Path, str::FromStr as _};
+use std::path::Path;
 
 use eyre::Result;
 use futures_util::TryStreamExt as _;
@@ -93,7 +93,7 @@ fn executor_upgrade_should_run_migration() -> Result<()> {
         .expect("Valid");
     assert!(alice_tokens.contains(&Permission::new(
         can_unregister_domain_token_id.clone(),
-        json!({ "domain": DomainId::from_str("wonderland").unwrap() }),
+        json!({ "domain": "wonderland".parse::<DomainId>().unwrap() }),
     )));
 
     upgrade_executor(
@@ -136,7 +136,7 @@ fn executor_upgrade_should_revoke_removed_permissions() -> Result<()> {
     // Permission which will be removed by executor
     let can_unregister_domain_token = Permission::new(
         "CanUnregisterDomain".parse()?,
-        json!({ "domain": DomainId::from_str("wonderland")? }),
+        json!({ "domain": "wonderland".parse::<DomainId>()? }),
     );
 
     // Register `TEST_ROLE` with permission

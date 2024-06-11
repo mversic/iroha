@@ -1,4 +1,4 @@
-use std::{collections::HashSet, str::FromStr as _};
+use std::collections::HashSet;
 
 use eyre::{Result, WrapErr as _};
 use iroha::{
@@ -32,7 +32,7 @@ fn correct_pagination_assets_after_creating_new_one() {
     let xor_filter = PredicateBox::new(value::QueryOutputPredicate::Identifiable(
         string::StringPredicate::starts_with("xor"),
     ));
-    let sort_by_metadata_key = Name::from_str("sort").expect("Valid");
+    let sort_by_metadata_key = "sort".parse::<Name>().expect("Valid");
     let sorting = Sorting::by_metadata_key(sort_by_metadata_key.clone());
     let account_id = ALICE_ID.clone();
 
@@ -48,8 +48,9 @@ fn correct_pagination_assets_after_creating_new_one() {
     let mut missing_register_assets = vec![];
 
     for i in 0..N_ASSETS {
-        let asset_definition_id =
-            AssetDefinitionId::from_str(&format!("xor{i}#wonderland")).expect("Valid");
+        let asset_definition_id = format!("xor{i}#wonderland")
+            .parse::<AssetDefinitionId>()
+            .expect("Valid");
         let asset_definition = AssetDefinition::store(asset_definition_id.clone());
         let mut asset_metadata = Metadata::new();
         asset_metadata
@@ -135,7 +136,7 @@ fn correct_sorting_of_entities() {
     let (_rt, _peer, test_client) = <PeerBuilder>::new().with_port(10_640).start_with_runtime();
     wait_for_genesis_committed(&[test_client.clone()], 0);
 
-    let sort_by_metadata_key = Name::from_str("test_sort").expect("Valid");
+    let sort_by_metadata_key = "test_sort".parse::<Name>().expect("Valid");
 
     // Test sorting asset definitions
 
@@ -144,8 +145,9 @@ fn correct_sorting_of_entities() {
     let mut instructions = vec![];
     let n = 10_u32;
     for i in 0..n {
-        let asset_definition_id =
-            AssetDefinitionId::from_str(&format!("xor_{i}#wonderland")).expect("Valid");
+        let asset_definition_id = format!("xor_{i}#wonderland")
+            .parse::<AssetDefinitionId>()
+            .expect("Valid");
         let mut asset_metadata = Metadata::new();
         asset_metadata
             .insert_with_limits(
@@ -254,7 +256,7 @@ fn correct_sorting_of_entities() {
     let mut instructions = vec![];
     let n = 10u32;
     for i in 0..n {
-        let domain_id = DomainId::from_str(&format!("neverland{i}")).expect("Valid");
+        let domain_id = format!("neverland{i}").parse::<DomainId>().expect("Valid");
         let mut domain_metadata = Metadata::new();
         domain_metadata
             .insert_with_limits(
@@ -301,7 +303,9 @@ fn correct_sorting_of_entities() {
     let mut metadata_of_domains = vec![];
     let mut instructions = vec![];
     for (idx, val) in input {
-        let domain_id = DomainId::from_str(&format!("neverland_{idx}")).expect("Valid");
+        let domain_id = format!("neverland_{idx}")
+            .parse::<DomainId>()
+            .expect("Valid");
         let mut domain_metadata = Metadata::new();
         domain_metadata
             .insert_with_limits(
@@ -354,7 +358,7 @@ fn sort_only_elements_which_have_sorting_key() -> Result<()> {
         .submit_blocking(Register::domain(Domain::new(domain_id.clone())))
         .expect("should be committed");
 
-    let sort_by_metadata_key = Name::from_str("test_sort").expect("Valid");
+    let sort_by_metadata_key = "test_sort".parse::<Name>().expect("Valid");
 
     let mut accounts_a = vec![];
     let mut accounts_b = vec![];

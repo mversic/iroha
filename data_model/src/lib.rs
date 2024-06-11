@@ -562,19 +562,19 @@ pub mod parameter {
         #[test]
         fn test_invalid_parameter_str() {
             assert!(matches!(
-                parameter::Parameter::from_str(INVALID_PARAM[0]),
+                INVALID_PARAM[0].parse::<parameter::Parameter>(),
                 Err(err) if err.reason == "The `Parameter` string did not contain the `=` character."
             ));
             assert!(matches!(
-                parameter::Parameter::from_str(INVALID_PARAM[1]),
+                INVALID_PARAM[1].parse::<parameter::Parameter>(),
                 Err(err) if err.reason == "`param_id` part of `Parameter` must start with `?`"
             ));
             assert!(matches!(
-                parameter::Parameter::from_str(INVALID_PARAM[2]),
+                INVALID_PARAM[2].parse::<parameter::Parameter>(),
                 Err(err) if err.to_string() == "The `Parameter` string did not contain the `=` character."
             ));
             assert!(matches!(
-                parameter::Parameter::from_str(INVALID_PARAM[3]),
+                INVALID_PARAM[3].parse::<parameter::Parameter>(),
                 Err(err) if err.to_string() == "Unsupported type provided for the `val` part of the `Parameter`."
             ));
         }
@@ -583,20 +583,25 @@ pub mod parameter {
         fn test_parameter_serialize_deserialize_consistent() {
             let parameters = [
                 Parameter::new(
-                    ParameterId::from_str("TransactionLimits")
+                    "TransactionLimits"
+                        .parse()
                         .expect("Failed to parse `ParameterId`"),
                     TransactionLimits::new(42, 24).into(),
                 ),
                 Parameter::new(
-                    ParameterId::from_str("MetadataLimits").expect("Failed to parse `ParameterId`"),
+                    "MetadataLimits"
+                        .parse()
+                        .expect("Failed to parse `ParameterId`"),
                     MetadataLimits::new(42, 24).into(),
                 ),
                 Parameter::new(
-                    ParameterId::from_str("LengthLimits").expect("Failed to parse `ParameterId`"),
+                    "LengthLimits"
+                        .parse()
+                        .expect("Failed to parse `ParameterId`"),
                     LengthLimits::new(24, 42).into(),
                 ),
                 Parameter::new(
-                    ParameterId::from_str("Int").expect("Failed to parse `ParameterId`"),
+                    "Int".parse().expect("Failed to parse `ParameterId`"),
                     numeric!(42).into(),
                 ),
             ];
@@ -926,7 +931,10 @@ impl serde::ser::Serialize for JsonString {
     where
         S: serde::Serializer,
     {
-        let json = serde_json::Value::from_str(&self.0).map_err(serde::ser::Error::custom)?;
+        let json = self
+            .0
+            .parse::<serde_json::Value>()
+            .map_err(serde::ser::Error::custom)?;
         json.serialize(serializer)
     }
 }

@@ -1094,8 +1094,6 @@ mod json {
 }
 #[cfg(test)]
 mod tests {
-    use std::str::FromStr;
-
     use super::*;
 
     #[test]
@@ -1103,7 +1101,7 @@ mod tests {
         macro_rules! case {
             ($input:expr, $expected:expr) => {
                 let MetadataValueArg { value } =
-                    MetadataValueArg::from_str($input).expect("should not fail with valid input");
+                    $input.parse().expect("should not fail with valid input");
                 assert_eq!(value, $expected);
             };
         }
@@ -1124,7 +1122,8 @@ mod tests {
     #[test]
     fn error_parse_invalid_value() {
         let invalid_str = "not_a_valid_value";
-        let _invalid_value = MetadataValueArg::from_str(invalid_str)
+        let _invalid_value = invalid_str
+            .parse::<MetadataValueArg>()
             .expect_err("Should fail invalid type from string but passed");
     }
 }

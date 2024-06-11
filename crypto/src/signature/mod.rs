@@ -559,8 +559,6 @@ impl<T> std::error::Error for SignatureVerificationFail<T> {}
 
 #[cfg(test)]
 mod tests {
-    use core::str::FromStr;
-
     use serde_json::json;
 
     use super::*;
@@ -669,7 +667,7 @@ mod tests {
         let public_key = "e701210312273E8810581E58948D3FB8F9E8AD53AAA21492EBB8703915BBB565A21B7FCC";
         let payload = "3a7991af1abb77f3fd27cc148404a6ae4439d095a63591b77c788d53f708a02a1509a611ad6d97b01d871e58ed00c8fd7c3917b6ca61a8c2833a19e000aac2e4";
 
-        let value = Signature::from_hex(PublicKey::from_str(public_key).unwrap(), payload).unwrap();
+        let value = Signature::from_hex(public_key.parse().unwrap(), payload).unwrap();
 
         assert_eq!(value.public_key().to_string(), public_key);
         assert_eq!(value.payload(), hex::decode(payload).unwrap());

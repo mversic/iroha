@@ -1,4 +1,4 @@
-use std::{fmt::Write as _, str::FromStr, sync::mpsc, thread};
+use std::{fmt::Write as _, sync::mpsc, thread};
 
 use eyre::Result;
 use iroha::data_model::{prelude::*, transaction::WasmSmartContract};
@@ -198,7 +198,7 @@ fn produce_multiple_events() -> Result<()> {
 
     // Registering role
     let alice_id = ALICE_ID.clone();
-    let role_id = RoleId::from_str("TEST_ROLE")?;
+    let role_id = "TEST_ROLE".parse::<RoleId>()?;
     let token_1 = Permission::new(
         "CanRemoveKeyValueInAccount".parse()?,
         json!({ "account": alice_id }),
